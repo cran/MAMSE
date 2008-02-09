@@ -1,9 +1,5 @@
-/* Compilation:
-  R CMD COMPILE name.c
-  R CMD SHLIB name.c
-*/
-/* */
-int comp(double x[], double y[], long int nx[], long int ny[], long int b[])
+
+int comp(double *x, double *y, int *nx, int *ny, int *b)
 {
 /* 
   x and y must be sorted; 
@@ -30,29 +26,7 @@ int comp(double x[], double y[], long int nx[], long int ny[], long int b[])
 }
 
 
-int compS(double x[], double y[], long int nx[], long int ny[], long int b[])
-{
-/* Unchecked yet... Meant to give empirical Sx(y[i])*/
-
-/*  int i,j;
-  
-  i=0; j=0;
-  
-  while(j<ny[0]){
-    while(x[i]<y[j] && i<nx[0]-1){
-      i=i+1;
-    }
-    b[j]=i;
-    if (i==*nx-1 && x[i]<y[j]) {b[j]=nx[0];}
-    j=j+1;
-  }
-
-  return 0;
-  */
-}
-
-
-int compmulti(double x[], double y[], long int nx[], long int ny[], long int p[], long int b[])
+int compmulti(double *x, double *y, int *nx, int *ny, int *p, int *b)
 {
 /* 
   x and y are matrices (nx*p and ny*p resp.) with one data point per line.

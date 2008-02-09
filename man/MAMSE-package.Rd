@@ -94,9 +94,12 @@ for(i in 1:3){
 
 MAMSE(z,.5,surv=TRUE)
 
-allz=pmin(.5,c(z[[1]][z[[1]][,2]==1,1],z[[2]][z[[2]][,2]==1,1],z[[3]][z[[3]][,2]==1,1]))
+allz=pmin(.5,c(z[[1]][z[[1]][,2]==1,1],z[[2]][z[[2]][,2]==1,1],
+   z[[3]][z[[3]][,2]==1,1]))
 K=WKME(z,.5,time=sort(unique(c(0,.5,allz,allz-.0001))))
-plot(K$time,K$wkme,type='l',col="blue",xlab="x",ylab="P(X<=x)",ylim=c(0,.5))
+plot(K$time,K$wkme,type='l',col="blue",xlab="x",ylab="P(X<=x)",
+   ylim=c(0,.5))
 lines(K$time,K$kme[,1],col="red")
-legend(0,.5,c("Weighted Kaplan-Meier","Kaplan-Meier"),col=c("blue","red"),lty=c(1,1))
+legend(0,.5,c("Weighted Kaplan-Meier","Kaplan-Meier"),
+   col=c("blue","red"),lty=c(1,1))
 }

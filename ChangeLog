@@ -1,0 +1,11 @@
+
+Version 0.1-0 (2008-02-01):
+
+ - Initial release.
+ 
+Version 0.1-1 (2008-02-09):
+
+ - Fixed 64-bit specific bug in the C code (use of long int).
+ - Edited examples in the documentation to avoid overfull lines in the pdf
+   version of the help files.
+ - Removed unwanted comma in the Author and Maintainer fields of DESCRIPTION.
