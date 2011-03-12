@@ -6,7 +6,9 @@
 \arguments{
   \item{x}{A list of \code{m} samples. Elements of the list must be vectors of
   matrices. If they are vectors, the univariate MAMSE weights are computed. 
-  Matrices should have \code{n} lines with one \code{p}-dimensional datum per line. 
+  Matrices should have \code{n} lines with one \code{p}-dimensional datum per line.
+  The data are automatically tranformed into rescaled ranks by the function
+  \link{ranked}.
   The MAMSE weights for copulas are then calculated. For survival
   MAMSE weights, use the argument \code{surv=TRUE} and
   provide an \code{n} by \code{2} matrix where the second column is an
@@ -66,10 +68,10 @@ J.-F. Plante (2008). Nonparametric adaptive likelihood weights. \emph{The
 Canadian Journal of Statistics}, \bold{36}, 443-461.
 
 J.-F. Plante (2009). Asymptotic properties of the MAMSE adaptive likelihood
-weights. \emph{Journal of Statistical Planning and Inference}, in press.
+weights. \emph{Journal of Statistical Planning and Inference}, \bold{139}, 2147-2161.
 
 J.-F. Plante (2009). About an adaptively weighted Kaplan-Meier estimate.
-\emph{Lifetime Data Analysis}. Under revision.
+\emph{Lifetime Data Analysis}, \bold{15}, 295-315. 
 
 X. Wang (2001). \emph{Maximum weighted likelihood estimation}, unpublished
 doctoral dissertation, Department of Statistics, The University of British

@@ -9,3 +9,10 @@ Version 0.1-1 (2008-02-09):
  - Edited examples in the documentation to avoid overfull lines in the pdf
    version of the help files.
  - Removed unwanted comma in the Author and Maintainer fields of DESCRIPTION.
+
+Version 0.1-2 (2011-03-12):
+
+ - Updated contact information
+ - The MAMSE weights for copulas did not convert the data into rescaled ranks.
+   This is now performed through the function ranked that can be redefined to 
+   allow different scaling of the ranks.

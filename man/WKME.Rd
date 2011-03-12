@@ -46,7 +46,7 @@ Distributions}. Unpublished doctoral dissertation, University of British
 Columbia.
 
 J.-F. Plante (2009). About an adaptively weighted Kaplan-Meier estimate.
-\emph{Lifetime Data Analysis}. Under revision.
+\emph{Lifetime Data Analysis}, 15, 295-315.
 }
 \examples{
 set.seed(2009)

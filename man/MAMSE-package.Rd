@@ -25,9 +25,9 @@ right-censored data, or for the copula underlying the distribution of multivaria
 data. The function \link{WKME} is used to compute the MAMSE-Weighted
 Kaplan-Meier estimate with (optional) bootstrap confidence intervals.
 }
-\author{Jean-Francois Plante, <plante(at)utstat.toronto.edu>.
+\author{Jean-Francois Plante, <jfplante(at)hec.ca>.
 
-Maintainer: Jean-Francois Plante, <plante(at)utstat.toronto.edu>.
+Maintainer: Jean-Francois Plante, <jfplante(at)hec.ca>.
 }
 \references{
 F. Hu and J. V. Zidek (2002). The weighted likelihood, \emph{The Canadian
@@ -41,10 +41,11 @@ J.-F. Plante (2008). Nonparametric adaptive likelihood weights. \emph{The
 Canadian Journal of Statistics}, \bold{36}, 443-461.
 
 J.-F. Plante (2009). Asymptotic properties of the MAMSE adaptive likelihood
-weights. \emph{Journal of Statistical Planning and Inference}, in press.
+weights. \emph{Journal of Statistical Planning and Inference}, \bold{139},
+2147-2161.  
 
 J.-F. Plante (2009). About an adaptively weighted Kaplan-Meier estimate.
-\emph{Lifetime Data Analysis}. Under revision.
+\emph{Lifetime Data Analysis}, \bold{15}, 295-315. 
 
 X. Wang (2001). \emph{Maximum weighted likelihood estimation}, unpublished
 doctoral dissertation, Department of Statistics, The University of British

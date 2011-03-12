@@ -19,8 +19,9 @@ MAMSE=function(x,surv=FALSE,ub=NULL,lb=0){
  if(var(sapply(x,dim)[2,])>0){
    stop("All samples must have the same number of dimensions.")
  }
-
-  return(MAMSEmultipo(x))
+ 
+  y=lapply(x,function(z){apply(z,2,ranked)})
+  return(MAMSEmultipo(y))
 
 }
 
@@ -456,4 +457,5 @@ if(m>2){
  c(1-sum(l),l)
 } 
  
+ranked=function(x){ rank(x)/(length(x)+1) }
 
