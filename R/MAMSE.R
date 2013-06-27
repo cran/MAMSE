@@ -177,7 +177,7 @@ MAMSEsurvpo=function(x,ub,lb=0){
   if(min(MX[-1])<ub||max(MN[-1])>=ub){
       y=x
       rem=(MX[-1]<ub)|(MN[-1]>=ub)
-      for(j in sort((2:m)[rem],dec=TRUE)){y[[j]]=NULL}
+      for(j in sort((2:m)[rem],decreasing=TRUE)){y[[j]]=NULL}
       a[c(FALSE,rem)]=0
       a[c(TRUE,!rem)]=MAMSEsurvpo(y,ub,lb)
       return(a)
@@ -187,7 +187,7 @@ MAMSEsurvpo=function(x,ub,lb=0){
   if(min(a)<0){
       y=x
       rem=a[-1]<0
-      for(j in sort((2:m)[rem],dec=TRUE)){y[[j]]=NULL}
+      for(j in sort((2:m)[rem],decreasing=TRUE)){y[[j]]=NULL}
       a[c(FALSE,rem)]=0
       a[c(TRUE,!rem)]=MAMSEsurvpo(y,ub,lb)
   }

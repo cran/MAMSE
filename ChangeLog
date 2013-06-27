@@ -16,3 +16,10 @@ Version 0.1-2 (2011-03-12):
  - The MAMSE weights for copulas did not convert the data into rescaled ranks.
    This is now performed through the function ranked that can be redefined to 
    allow different scaling of the ranks.
+
+Version 0.1-3 (2013-06-27):
+
+ - Addition of an explicit NAMESPACE to comply with the current requirements 
+   for R packages.
+ - Changes to the example of WKME to speed up the exeuction time in order
+   to respect CRAN's policies.
