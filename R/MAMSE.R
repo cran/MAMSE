@@ -1,4 +1,4 @@
-MAMSE=function(x,surv=FALSE,ub=NULL,lb=0){
+MAMSE=function(x,surv=FALSE,ub=NULL,lb=0,MCint=FALSE,nMC=10000){
 
  if(!is.list(x)){ stop("You must provide a list of samples") }
 
@@ -21,7 +21,7 @@ MAMSE=function(x,surv=FALSE,ub=NULL,lb=0){
  }
  
   y=lapply(x,function(z){apply(z,2,ranked)})
-  return(MAMSEmultipo(y))
+  return(MAMSEmultipo(y,MCint,nMC))
 
 }
 
@@ -32,15 +32,48 @@ MAMSEunipo=function(x){
   if(min(a)<0){
       y=x
       i=(1:length(x))[a<0]
-      for(j in i){y[[j]]=NULL}
+      for(j in sort(i,decreasing=TRUE)){y[[j]]=NULL}
       a[i]=0
       a[-i]=MAMSEunipo(y)
   }
   a
 }
+  wcomp=function(x,y,w,nx,ny){
+ 
+  # x and y must be sorted; 
+  # w must sum to one, weights of the x;
+  # nx and ny are the length of the datasets (vectors) x and y)
+  # Used for the calculation of MAMSE weights.
+  #  
+  # Output: b[i] = Fw(y[i]), the weighted empirical CDF of X evaluated at y[i]
+ 
+     .C(cwcomp,
+        as.numeric(x),
+        as.numeric(y),
+	as.numeric(w),
+        as.integer(nx),
+        as.integer(ny),
+        out=numeric(ny))$out
+
+  }
 
 
+  comp=function(x,y,nx,ny){
+ 
+  # x and y must be sorted; 
+  # nx and ny are the length of the datasets (vectors) x and y)
+  # Used for the calculation of MAMSE weights.
+  #  
+  # Output: b[i] = Fx(y[i]), the empirical CDF of X evaluated at y[i]
+ 
+     .C(ccomp,
+        as.numeric(x),
+        as.numeric(y),
+        as.integer(nx),
+        as.integer(ny),
+        out=integer(ny))$out
 
+  }
 
 MAMSEuni=function(x){
 
@@ -58,24 +91,6 @@ MAMSEuni=function(x){
   y=sort(x[[1]])
   N=n[1]
   
-  comp=function(x,y,nx,ny){
- 
-  # x and y must be sorted; 
-  # nx and ny are the length of the datasets (vectors) x and y)
-  # Used for the calculation of MAMSE weights.
-  #  
-  # Output: b[i] = Fx(y[i]), the empirical CDF of X evaluated at y[i]
- 
-     .C("comp",
-        as.numeric(x),
-        as.numeric(y),
-        as.integer(nx),
-        as.integer(ny),
-        out=integer(ny),
-	PACKAGE="MAMSE")$out
-
-  }
-
 b=t(cbind((1:n[1]),sapply(2:m,function(i,x,y,n){comp(sort(x[[i]]),y,n[i],n[1])},n=n,x=x,y=y)))/n
   A=matrix(apply(b,2,function(b,n,m){
 (b[1]-b[-1])%*%t(b[1]-b[-1])+
@@ -354,16 +369,16 @@ wvar=function(x,time,Fi=NULL){
 # -------------------------------------------
 
 
-MAMSEmultipo=function(x){
+MAMSEmultipo=function(x,MCint,nMC){
 
   if(length(x)==1) return(1)
-  a=MAMSEmulti(x)
+  a=MAMSEmulti(x,MCint,nMC)
   if(min(a)<0){
       y=x
       i=(1:length(x))[a<0]
-      for(j in i){y[[j]]=NULL}
+      for(j in sort(i,decreasing=TRUE)){y[[j]]=NULL}
       a[i]=0
-      a[-i]=MAMSEmulti(y)
+      a[-i]=MAMSEmulti(y,MCint,nMC)
   }
   a
 }
@@ -371,20 +386,6 @@ MAMSEmultipo=function(x){
 
 # General programs
 # ----------------
-
-
-MAMSEmulti=function(x){
-
-# MAMSE for multivariate data
-
-  m=length(x)
-
-  n=sapply(1:m,function(i){dim(x[[i]])})
-  if(max(n[2,])>min(n[2,])){stop("Populations have data of different dimensions.")}
-  d=n[2,1]
-  n=n[1,]
-  N=n[1]^d
-
 
   compmulti=function(x,y,nx,ny,p){
 
@@ -394,14 +395,13 @@ MAMSEmulti=function(x){
   # Output: b[i] = Fx(y[i]), the empirical CDF of X evaluated at y[i]
 
 
-     .C("compmulti",
+     .C(ccompmulti,
         as.numeric(c(x,0)),
         as.numeric(c(y,0)),
         as.integer(nx),
         as.integer(ny),
         as.integer(p),
-        out=integer(ny),
-	PACKAGE="MAMSE")$out/nx
+        out=integer(ny))$out/nx
 
   }
 
@@ -425,9 +425,27 @@ MAMSEmulti=function(x){
     out
   }
 
-  
+MAMSEmulti=function(x,MCint,nMC){
+
+# MAMSE for multivariate data
+
+  m=length(x)
+
+  n=sapply(1:m,function(i){dim(x[[i]])})
+  if(max(n[2,])>min(n[2,])){stop("Populations have data of different dimensions.")}
+  d=n[2,1]
+  n=n[1,]
+
+  if(MCint==FALSE) { 
+    X=gridof(x[[1]]) 
+  }
+  else {
+    X=matrix(runif(nMC*d),nMC,d)
+  }
+
+  N=dim(X)[1]
   b=matrix(0,m,N)
-  X=gridof(x[[1]])
+
 
   for(i in 1:m){
     b[i,]=compmulti(x[[i]],X,n[i],N,d)
@@ -458,4 +476,138 @@ if(m>2){
 } 
  
 ranked=function(x){ rank(x)/(length(x)+1) }
+
+# Programs for ROC curves -- added in revision 0.2
+# --------------------------------------------------
+
+plot.roc=function(x,...){
+# x is a list that contains FPR,TPR,AUC, such as the output of the roc() function.
+  plot(x$FPR,x$TPR,xlim=0:1,ylim=0:1,type="l",xlab="FPR",ylab="TPR",...)
+  lines(x=0:1,y=0:1,col="gray")
+  if(!is.na(x$AUC)){
+    title(sub=paste("AUC =",round(x$AUC,5)))
+  }
+}
+
+lines.roc=function(x,...){
+# x is a list that contains FPR,TPR,AUC, such as the output of the roc() function.
+  lines(x$FPR,x$TPR,...)
+}
+
+roc=function(healthy,diseased,wh=NULL,wd=NULL,FPR=NULL,method="np",smalldiseased=TRUE,AUC=FALSE,nFPR=201){
+# healthy and diseased : data vector, or list of data vectors for the healthy and the diseased
+
+  match.arg(method,c("np","lognormal","normal"))
+  if(is.list(healthy) || is.list(diseased)){ 
+    if(length(healthy)!=length(diseased)||!is.list(healthy) || !is.list(diseased)) stop("Mismatch in the number of populations.")
+  }
+
+  if (method=="np"){
+    thresh=c(-Inf,unique(sort(c(unlist(healthy),unlist(diseased)))),Inf)
+    tmpFPR=EDF(healthy,thresh,w=wh)
+    tmpTPR=EDF(diseased,thresh,w=wd)
+
+    if(!smalldiseased) {
+      tmpFPR=(1-tmpFPR)[length(tmpFPR):1]
+      tmpTPR=(1-tmpTPR)[length(tmpFPR):1]
+    }
+
+    if(is.null(FPR)){
+      FPR=tmpFPR
+      TPR=tmpTPR
+    } else {
+      out=approx(tmpFPR,tmpTPR,FPR,ties = "ordered")
+      FPR=out$x
+      TPR=out$y
+    }
+  
+    valAUC=NA
+    if(TPR[1]==0 && TPR[length(TPR)]==1 && AUC==TRUE) { valAUC=sum(diff(FPR)*(TPR[-1]+TPR[-length(FPR)])/2) }
+ 
+  }
+
+  if(method=="normal" || method=="lognormal"){
+
+    if(method=="lognormal"){
+      if(is.list(healthy)){
+        healthy=lapply(healthy,log)
+        diseased=lapply(diseased,log)
+      } else {
+        healthy=log(healthy)
+        diseased=log(diseased)
+      }
+    }
+
+    if(is.list(healthy)){
+      nh=sapply(healthy,length)
+      nd=sapply(diseased,length)
+      if(is.null(wh)) wh=MAMSE(healthy)
+      if(is.null(wd)) wd=MAMSE(diseased)
+      Wh=rep(wh/nh,nh)
+      Wd=rep(wd/nd,nd)
+      healthy=unlist(healthy)
+      diseased=unlist(diseased)
+    } else { 
+      if(is.null(wh)) { Wh=rep(1/length(healthy),length(healthy)) } else { Wh=wh }
+      if(is.null(wd)) { Wd=rep(1/length(diseased),length(diseased)) } else {Wd=wd }
+    }
+
+    if(abs(sum(Wh)-1)>1e-6 || abs(sum(Wd)-1)>1e-6) stop(paste("Weights must equal 1, not",sum(Wh),sum(Wd)))
+
+    muh=sum(Wh*healthy)
+    mud=sum(Wd*diseased)
+    sdh=sqrt(sum(Wh*(healthy-muh)^2))
+    sdd=sqrt(sum(Wd*(diseased-mud)^2))
+
+    if(is.null(FPR)){ FPR=seq(0,1,length.out=nFPR) }
+    
+    thresh=qnorm(FPR,mean=muh,sd=sdh,lower.tail=smalldiseased)
+    TPR=pnorm(thresh,mean=mud,sd=sdd,lower.tail=smalldiseased)
+ 
+    valAUC=NA
+    if(FPR[1]==0 && FPR[length(FPR)]==1 && AUC==TRUE) { valAUC=sum(diff(FPR)*(TPR[-1]+TPR[-length(FPR)])/2) }
+  }
+  ROC=list(FPR=FPR,TPR=TPR,AUC=valAUC)
+  class(ROC)="roc"
+  return(ROC)
+
+}
+
+EDF=function(x, values, w=NULL){
+# x      = data (list with multiple datasets or vector)
+# values = values where the EDF should be evaluated
+# w      = weights (default=MAMSE is calculated)
+
+  # Define W and X as needed
+  if(is.list(x)){
+    n=sapply(x,length)
+    if (is.null(w)) {
+      w=MAMSE(x)
+    }
+
+    W=rep(w/n,n)
+    X=unname(unlist(x))
+    a=sort.list(X)
+    X=X[a]; W=W[a]
+  } else {
+    a=sort.list(x)
+    if(is.null(w)) { W=rep(1/length(x),length(x)) } else { W=w }
+    X=x[a]; W=W[a]
+  }
+
+  # Remove data with 0 weight
+  X=X[W>0];W=W[W>0]
+
+  # Treats +/-Inf
+
+    values[values==-Inf]=min(X)-1
+    values[values==Inf]=max(X)+1
+    ovals=sort.list(values)
+    Fx=wcomp(X,values[ovals],W,length(X),length(values))
+    Fx[ovals]=Fx
+ 
+  return(Fx)
+}
+
+
 

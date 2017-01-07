@@ -2,7 +2,7 @@
 \alias{MAMSE}
 \title{Minimum Averaged Mean Squared Error Weights}
 \description{Computes the MAMSE weights (see references below for their definition).}
-\usage{MAMSE(x,surv=FALSE,ub=NULL,lb=0)}
+\usage{MAMSE(x,surv=FALSE,ub=NULL,lb=0,MCint=FALSE,nMC=10000)}
 \arguments{
   \item{x}{A list of \code{m} samples. Elements of the list must be vectors of
   matrices. If they are vectors, the univariate MAMSE weights are computed. 
@@ -18,6 +18,9 @@
   the multivariate version for copulas.}
   \item{ub}{if \code{surv=TRUE}, the upper bound for the integral of the MAMSE criterion.}
   \item{lb}{If \code{surv=TRUE}, the lower bound for the integral of the MAMSE criterion.}
+  \item{MCint}{When MAMSE weights are calculated for copulas, MCint=TRUE allows to proceed with
+  Monte Carlo integration. The laternative MCint=TRUE will estimate the integral on the grid \code{[1/n1,2/n1,...,1]^p} which does not scale well with the number of dimensions p.}
+\item{nMC}{When \code{MCint=TRUE}, \code{nMC} controls the number of samples used to approximate the integral.}
   }
 \details{Provided a list of samples, this function returns the Minimum Averaged
 Mean Squared Error weights. The MAMSE weights can be used in a weighted
@@ -47,6 +50,7 @@ MAMSE(x)
 y=list(matrix(rnorm(150),nc=2),matrix(rnorm(150),nc=2),
    matrix(rnorm(150),nc=2))
 MAMSE(y)
+MAMSE(y,MCint=TRUE)
 
 #MAMSE weights for right-censored data
 z=list(cbind(rexp(50),rbinom(50,1,.5)),cbind(rexp(50,1.1),

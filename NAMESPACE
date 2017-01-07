@@ -1,12 +1,21 @@
 useDynLib(
 MAMSE,
-comp,
-compmulti
+ccomp,
+cwcomp,
+ccompmulti
 )
+
+importFrom("stats", "quantile", "var")
+importFrom("graphics", "lines", "plot", "title")
+importFrom("stats", "approx", "pnorm", "qnorm", "runif")
 
 export(
 MAMSE,
 KM,
 WKME,
-ranked
+ranked,
+roc
 )
+
+S3method(plot,roc)
+S3method(lines,roc)

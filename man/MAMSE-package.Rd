@@ -1,12 +1,12 @@
 \name{MAMSE-package}
 \alias{MAMSE-package}
 \docType{package}
+\encoding{UTF-8}
 \title{
 Minimum Averaged Mean Squared Error (MAMSE) Weights.
 }
 \description{This package provides algorithms to calculate the nonparametric
-adaptive MAMSE weights.
-The MAMSE weights can be used for the
+adaptive MAMSE weights. The MAMSE weights can be used for the
 weighted likelihood (see references below), or as mixing probabilities to define
 mixtures of empirical distributions. They provide a framework to borrow strenght
 with minimal assumptions.
@@ -15,21 +15,24 @@ with minimal assumptions.
 \tabular{ll}{
 Package: \tab MAMSE\cr
 Type: \tab Package\cr
-Version: \tab 0.1\cr
-Date: \tab 2009-02-01\cr
+Version: \tab 0.2\cr
+Date: \tab 2016-01-20\cr
 License: \tab GPL-2\cr
-LazyLoad: \tab yes\cr
 }
 Function \link{MAMSE} calculates the MAMSE weights for univariate data,
 right-censored data, or for the copula underlying the distribution of multivariate
-data. The function \link{WKME} is used to compute the MAMSE-Weighted
+data. The function \link{WKME} is used to compute the MAMSE-weighted
 Kaplan-Meier estimate with (optional) bootstrap confidence intervals.
+The function \link{roc} calculates MAMSE-weighted ROC curves.
 }
 \author{Jean-Francois Plante, <jfplante(at)hec.ca>.
 
 Maintainer: Jean-Francois Plante, <jfplante(at)hec.ca>.
 }
 \references{
+J.-B. Débordès & J.-F. Plante (2009). Combining ROC curves using MAMSE weighted distributions.
+\emph{Cahier du GERAD G-2015-69}. 
+
 F. Hu and J. V. Zidek (2002). The weighted likelihood, \emph{The Canadian
 Journal of Statistics}, \bold{30}, 347--371.
 
@@ -58,7 +61,7 @@ Columbia.
 \keyword{univar}
 
 \seealso{
-\link{MAMSE}, \link{WKME}.
+\link{MAMSE}, \link{WKME}, \link{roc}.
 }
 
 \examples{
@@ -103,4 +106,35 @@ plot(K$time,K$wkme,type='l',col="blue",xlab="x",ylab="P(X<=x)",
 lines(K$time,K$kme[,1],col="red")
 legend(0,.5,c("Weighted Kaplan-Meier","Kaplan-Meier"),
    col=c("blue","red"),lty=c(1,1))
+
+# MAMSE-weighted ROC curve
+
+set.seed(2016)
+nh=c(50,25,70,100)
+nd=c(40,20,50,80)
+muh=c(1.5,1,1.7,1.2)
+mud=c(0,.2,.5,.4)
+
+# Target curve
+FPR=seq(0,1,.01)
+TPR=pnorm(qnorm(FPR,mean=muh[1]),mean=mud[1])
+
+simh=list()
+simd=list()
+
+for(i in (1:length(nh))){
+  simh[[i]]=rnorm(nh[i],mean=muh[i])
+  simd[[i]]=rnorm(nd[i],mean=mud[i])
+}
+
+par(mfrow=c(1,2))
+plot(roc(simh,simd),col="red")
+lines(roc(simh[[1]],simd[[1]]),col="blue")
+lines(FPR,TPR,col="gray")
+title("Empirical ROC curves")
+
+plot(roc(simh,simd,method="normal"),col="red")
+lines(roc(simh[[1]],simd[[1]],method="normal"),col="blue")
+lines(FPR,TPR,col="gray")
+title("Parametric ROC curves")
 }
